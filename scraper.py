@@ -29,9 +29,10 @@ line = f.readline()
 
 while line:
     print(line)
-    #driver.implicitly_wait(10)
+    driver.implicitly_wait(10)
     driver.get(line)
-    element_content = driver.find_element(By.XPATH, "//*[@id="file_op"]/div[1]/div[1]/div[2]/div/div/button[1]").get_attribute("data-clipboard-text")
+    element = driver.find_element(By.XPATH, "//*[@id="file_op"]/div[1]/div[1]/div[2]/div/div/button[1]")
+    element_content = element.get_attribute("data-clipboard-text")
     sleep(5)
     print(driver.title)
     print(element_content)
