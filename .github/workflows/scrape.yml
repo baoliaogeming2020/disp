@@ -1,6 +1,9 @@
 name: scrape
 on:
   workflow_dispatch:
+  # 复刻本库后要取消以下两行注释，保证定期运行
+  #schedule:
+  #  - cron: '0 22 * * 1,4'
 jobs:
   scrape:
     runs-on: ubuntu-latest
@@ -22,15 +25,21 @@ jobs:
       - name: Install all necessary packages
         run: pip install requests beautifulsoup4 pandas webdriver-manager selenium
       - name: Run the scraping script
+        # 如果你修改了根目录 python 脚本的文件名，此处要修改
         run: python scraper.py
-#      - name: Commit files
-#        run: |
-#          git config --global user.email "baoliaogeming2020@protonmail.com"
-#          git config --global user.name "baoliaogeming2020"
-#          git add .
-#          git commit -m "Create new file"
-#      - name: Push changes
-#        uses: ad-m/github-push-action@master
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
-#          branch: main
+      # 以下运行 保证将生成的链接文件存到根目录，需要修改"user.email"和"user.name"后双引号
+      # 内的字符为你自己的 github 账号
+      - name: Commit files
+        # 保证 定期运行时不运行，也就是不将生成的链接文本写入根目录
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          git config --global user.email "baoliaogeming2020@protonmail.com"
+          git config --global user.name "baoliaogeming2020"
+          git add .
+          git commit -m "Create new file"
+      - name: Push changes
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
