@@ -3,9 +3,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.core.os_manager import ChromeType
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from time import sleep
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from time import sleep
+import time
 
 chrome_service = Service(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
 
@@ -24,21 +26,24 @@ for option in options:
 
 driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 
-f = open("link.txt")
-line = f.readline()
+# 打开传到 tmp.link 的文件 link.txt(此文件在本库的根目录中)，此文件内按行写入下载界面链接
+# 如：https://www.tmp.link/?tmpui_page=/file&ukey=6644234bb351d
+net_link_file = open("link.txt")
+# 按当前时间新建文件，准备写入 界面链接、文件名、下载链接，此文件会推送到 github 本库根目录
+wsd_link_file = open(time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())+".txt" , "w")
+
+line = net_link_file.readline()
 
 while line:
-    print(line)
-    driver.implicitly_wait(10)
     driver.get(line)
-    element = driver.find_element(By.XPATH, "//*[@id='file_op']/div[1]/div[1]/div[2]/div/div/button[1]")
-    element_content = element.get_attribute("data-clipboard-text")
-    sleep(5)
-    print(driver.title)
-    print(element_content)
-    line = f.readline()
+    sleep(10)
+    element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//button[iconpark-icon/@name='rectangle-terminal']/..")))
+    element_content = element.get_attribute("innerHTML")
 
-f.close()
+    lines = element_content.split('\n')
+    wsd_link_file.write(line[:-1]+"\n"+driver.title+"\n"+lines[1][139:-2]+"\n\n")
+    print(line[:-1]+"\n"+driver.title+"\n"+lines[1][139:-2]+"\n\n")
+    line = net_link_file.readline()
 
-# driver.get('https://www.tmp.link/?tmpui_page=/app&listview=login')
-# driver.get_screenshot_as_file('foo.png')
+net_link_file.close()
+wsd_link_file.close()
